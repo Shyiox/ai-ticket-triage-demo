@@ -1,0 +1,17 @@
+[
+    {
+        "id": 1,
+        "subject": "Login geht nicht",
+        "text": "Ich bekomme beim Login einen Fehler seit heute Morgen."
+    },
+    {
+        "id": 2,
+        "subject": "Spam im Formular",
+        "text": "Hier ist ein Link zu einer komischen Seite..."
+    },
+    {
+        "id": 3,
+        "subject": "Account gesperrt",
+        "text": "Bitte entsperren, ich brauche dringend Zugriff."
+    }
+]

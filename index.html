@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AI Ticket Triage Demo</title>
+    <style>
+        body {
+            font-family: system-ui, Segoe UI, Arial, sans-serif;
+            margin: 24px;
+            max-width: 900px
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0
+        }
+
+        .meta {
+            opacity: .75;
+            font-size: 12px
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid #ccc;
+            margin-right: 6px;
+            font-size: 12px
+        }
+    </style>
+</head>
+
+<body>
+    <h1>AI Ticket Triage Demo (Offline)</h1>
+    <p class="meta">Heuristik-basierte Triage als „Baseline“ (kann später durch LLM ersetzt werden, ohne API-Key im
+        Repo).</p>
+
+    <button id="run">Tickets laden & bewerten</button>
+    <div id="out"></div>
+
+    <script>
+        function scoreTicket(t) {
+            const s = (t.subject + " " + t.text).toLowerCase();
+            let urgency = 0;
+
+            // simple urgency signals
+            if (/(dringend|sofort|heute|asap)/.test(s)) urgency += 2;
+            if (/(gesperrt|kein zugriff|login geht nicht|fehler)/.test(s)) urgency += 2;
+            if (/(spam|link|scam|phishing)/.test(s)) urgency += 3;
+
+            let category = "general";
+            if (/(login|passwort|zugriff|auth)/.test(s)) category = "auth";
+            if (/(spam|phishing|scam|link)/.test(s)) category = "abuse";
+            if (/(zahlung|abo|rechnung)/.test(s)) category = "billing";
+
+            const label = urgency >= 4 ? "high" : urgency >= 2 ? "medium" : "low";
+            const nextAction =
+                category === "abuse" ? "Prüfen, ggf. sperren/entfernen, IP/Rate-Limit" :
+                    category === "auth" ? "Logs prüfen, User zurücksetzen, Statusseite checken" :
+                        category === "billing" ? "Zahlungsstatus prüfen, Support-Antwort vorbereiten" :
+                            "Rückfragen stellen, einordnen, weiterleiten";
+
+            return { urgency: label, category, nextAction };
+        }
+
+        document.getElementById("run").addEventListener("click", async () => {
+            const res = await fetch("./tickets.json");
+            const tickets = await res.json();
+            const out = document.getElementById("out");
+            out.innerHTML = "";
+
+            tickets.forEach(t => {
+                const r = scoreTicket(t);
+                const div = document.createElement("div");
+                div.className = "card";
+                div.innerHTML = `
+          <div class="meta">#${t.id}</div>
+          <h3>${t.subject}</h3>
+          <p>${t.text}</p>
+          <div>
+            <span class="tag">urgency: <b>${r.urgency}</b></span>
+            <span class="tag">category: <b>${r.category}</b></span>
+          </div>
+          <p class="meta"><b>Next action:</b> ${r.nextAction}</p>
+        `;
+                out.appendChild(div);
+            });
+        });
+    </script>
+</body>
+
+</html>
