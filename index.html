@@ -6,49 +6,229 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>AI Ticket Triage Demo</title>
     <style>
+        :root {
+            --bg: #0b0d10;
+            --card: #11151b;
+            --muted: #9aa4b2;
+            --text: #eef2f7;
+            --line: #1d2430;
+            --pill: #141a22;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+            --radius: 14px;
+        }
+
         body {
             font-family: system-ui, Segoe UI, Arial, sans-serif;
-            margin: 24px;
-            max-width: 900px
+            margin: 0;
+            background: radial-gradient(1200px 600px at 20% -10%, rgba(255, 255, 255, .08), transparent 60%),
+                radial-gradient(900px 450px at 80% 0%, rgba(255, 255, 255, .06), transparent 55%),
+                var(--bg);
+            color: var(--text);
+        }
+
+        .wrap {
+            max-width: 980px;
+            margin: 28px auto;
+            padding: 0 18px;
+        }
+
+        .hero {
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+            border-radius: var(--radius);
+            padding: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            margin: 0 0 6px 0;
+            font-size: 22px;
+            letter-spacing: .2px;
+        }
+
+        .sub {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .bar {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: 1fr 180px 180px 160px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: rgba(17, 21, 27, .85);
+            color: var(--text);
+            padding: 10px 12px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: rgba(154, 164, 178, .65);
+        }
+
+        button {
+            cursor: pointer;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03));
+            transition: transform .06s ease;
+        }
+
+        button:active {
+            transform: scale(.99);
+        }
+
+        .stats {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .pill {
+            border: 1px solid var(--line);
+            background: rgba(20, 26, 34, .6);
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+
+        .grid {
+            margin-top: 16px;
+            display: grid;
+            gap: 12px;
         }
 
         .card {
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 12px 0
+            border: 1px solid var(--line);
+            background: rgba(17, 21, 27, .88);
+            border-radius: var(--radius);
+            padding: 14px;
+            box-shadow: var(--shadow);
         }
 
         .meta {
-            opacity: .75;
-            font-size: 12px
+            color: var(--muted);
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .title {
+            margin: 8px 0 6px 0;
+            font-size: 16px;
+        }
+
+        .text {
+            margin: 0 0 10px 0;
+            color: rgba(238, 242, 247, .9);
+            line-height: 1.5;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
         }
 
         .tag {
-            display: inline-block;
+            background: var(--pill);
+            border: 1px solid var(--line);
             padding: 4px 10px;
             border-radius: 999px;
-            border: 1px solid #ccc;
-            margin-right: 6px;
-            font-size: 12px
+            font-size: 12px;
+        }
+
+        .tag b {
+            font-weight: 650;
+        }
+
+        .next {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.45;
+            border-top: 1px solid var(--line);
+            padding-top: 10px;
+        }
+
+        .status {
+            margin-top: 14px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hint {
+            margin-top: 10px;
+            font-size: 12px;
+            color: rgba(154, 164, 178, .9);
+        }
+
+        .hint code {
+            background: rgba(255, 255, 255, .06);
+            padding: 2px 6px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+        }
+
+        @media (max-width: 860px) {
+            .bar {
+                grid-template-columns: 1fr 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>AI Ticket Triage Demo (Offline)</h1>
-    <p class="meta">Heuristik-basierte Triage als „Baseline“ (kann später durch LLM ersetzt werden, ohne API-Key im
-        Repo).</p>
+    <div class="wrap">
+        <div class="hero">
+            <h1>AI Ticket Triage Demo</h1>
+            <p class="sub">Heuristik-basierte Triage als „Baseline“. (Kann später durch ein LLM ersetzt werden, ohne
+                API-Key im Repo.)</p>
 
-    <button id="run">Tickets laden & bewerten</button>
-    <div id="out"></div>
+            <div class="bar">
+                <input id="q" placeholder="Suche (z. B. login, spam, gesperrt) …" />
+                <select id="urgency">
+                    <option value="all">Urgency: alle</option>
+                    <option value="high">Urgency: high</option>
+                    <option value="medium">Urgency: medium</option>
+                    <option value="low">Urgency: low</option>
+                </select>
+                <select id="sort">
+                    <option value="urgency">Sort: high → low</option>
+                    <option value="id">Sort: id</option>
+                </select>
+                <button id="run">Tickets laden</button>
+            </div>
+
+            <div class="stats" id="stats"></div>
+            <div class="status" id="status">Status: bereit.</div>
+            <div class="hint">Tipp: Demo läuft per <code>tickets.json</code> (synthetische Daten).</div>
+        </div>
+
+        <div class="grid" id="out"></div>
+    </div>
 
     <script>
+        const $ = (id) => document.getElementById(id);
+
         function scoreTicket(t) {
             const s = (t.subject + " " + t.text).toLowerCase();
             let urgency = 0;
 
-            // simple urgency signals
             if (/(dringend|sofort|heute|asap)/.test(s)) urgency += 2;
             if (/(gesperrt|kein zugriff|login geht nicht|fehler)/.test(s)) urgency += 2;
             if (/(spam|link|scam|phishing)/.test(s)) urgency += 3;
@@ -68,28 +248,101 @@
             return { urgency: label, category, nextAction };
         }
 
-        document.getElementById("run").addEventListener("click", async () => {
-            const res = await fetch("./tickets.json");
-            const tickets = await res.json();
-            const out = document.getElementById("out");
-            out.innerHTML = "";
+        function urgencyRank(u) {
+            return u === "high" ? 0 : u === "medium" ? 1 : 2;
+        }
 
-            tickets.forEach(t => {
-                const r = scoreTicket(t);
-                const div = document.createElement("div");
-                div.className = "card";
-                div.innerHTML = `
-          <div class="meta">#${t.id}</div>
-          <h3>${t.subject}</h3>
-          <p>${t.text}</p>
-          <div>
-            <span class="tag">urgency: <b>${r.urgency}</b></span>
-            <span class="tag">category: <b>${r.category}</b></span>
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, (m) => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+            }[m]));
+        }
+
+        async function loadTickets() {
+            $("status").textContent = "Status: lade tickets.json …";
+            const res = await fetch("./tickets.json", { cache: "no-store" });
+            if (!res.ok) throw new Error("tickets.json konnte nicht geladen werden");
+            const tickets = await res.json();
+            $("status").textContent = `Status: ${tickets.length} Tickets geladen.`;
+            return tickets;
+        }
+
+        function renderStats(list) {
+            const counts = { high: 0, medium: 0, low: 0 };
+            list.forEach(x => counts[x.urgency] = (counts[x.urgency] || 0) + 1);
+            $("stats").innerHTML = `
+        <div class="pill">high: <b>${counts.high}</b></div>
+        <div class="pill">medium: <b>${counts.medium}</b></div>
+        <div class="pill">low: <b>${counts.low}</b></div>
+        <div class="pill">gesamt: <b>${list.length}</b></div>
+      `;
+        }
+
+        function render(list) {
+            const out = $("out");
+            out.innerHTML = "";
+            if (list.length === 0) {
+                out.innerHTML = `<div class="card"><div class="meta">Keine Treffer</div><p class="text">Filter/Suche liefern keine Tickets.</p></div>`;
+                return;
+            }
+
+            list.forEach(t => {
+                out.insertAdjacentHTML("beforeend", `
+          <div class="card">
+            <div class="meta"><span>#${escapeHtml(t.id)}</span><span>${escapeHtml(t.category)}</span></div>
+            <h3 class="title">${escapeHtml(t.subject)}</h3>
+            <p class="text">${escapeHtml(t.text)}</p>
+            <div class="tags">
+              <span class="tag">urgency: <b>${escapeHtml(t.urgency)}</b></span>
+              <span class="tag">category: <b>${escapeHtml(t.category)}</b></span>
+            </div>
+            <p class="next"><b>Next action:</b> ${escapeHtml(t.nextAction)}</p>
           </div>
-          <p class="meta"><b>Next action:</b> ${r.nextAction}</p>
-        `;
-                out.appendChild(div);
+        `);
             });
+        }
+
+        function applyFilters(all) {
+            const q = $("q").value.trim().toLowerCase();
+            const urg = $("urgency").value;
+            const sort = $("sort").value;
+
+            let list = all.slice();
+
+            // filter
+            if (q) {
+                list = list.filter(t => (t.subject + " " + t.text + " " + t.category).toLowerCase().includes(q));
+            }
+            if (urg !== "all") {
+                list = list.filter(t => t.urgency === urg);
+            }
+
+            // sort
+            if (sort === "urgency") {
+                list.sort((a, b) => urgencyRank(a.urgency) - urgencyRank(b.urgency) || (a.id - b.id));
+            } else {
+                list.sort((a, b) => a.id - b.id);
+            }
+
+            renderStats(list);
+            render(list);
+        }
+
+        let ALL = [];
+
+        $("run").addEventListener("click", async () => {
+            try {
+                const tickets = await loadTickets();
+                ALL = tickets.map(t => ({ ...t, ...scoreTicket(t) }));
+                applyFilters(ALL);
+            } catch (e) {
+                $("status").textContent = "Status: Fehler — " + (e?.message || String(e));
+            }
+        });
+
+        ["q", "urgency", "sort"].forEach(id => {
+            $(id).addEventListener("input", () => applyFilters(ALL));
+            $(id).addEventListener("change", () => applyFilters(ALL));
         });
     </script>
 </body>
