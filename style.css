@@ -1,15 +1,22 @@
 :root {
-    /* RIVAID-ish: dark, clean, slightly glassy */
-    --bg: #0b0d10;
-    --panel: #11151b;
-    --panel2: #0f141a;
-    --text: #eef2f7;
-    --muted: #a5b0be;
-    --border: rgba(255, 255, 255, .08);
-    --shadow: 0 18px 60px rgba(0, 0, 0, .55);
-    --radius: 18px;
-    --accent: #2aa7a1;
-    /* kannst du später 1:1 an RIVAID angleichen */
+    /* RIVAID-like LIGHT */
+    --bg1: #dff2f2;
+    --bg2: #eaf7f7;
+
+    --card: #fbf6ea;
+    /* warm/creamy */
+    --card2: #ffffff;
+    --text: #101417;
+    --muted: #5f6b76;
+
+    --input: #eaf1ff;
+    /* leicht bläulich wie im Login */
+    --border: rgba(16, 20, 23, .12);
+    --shadow: 0 20px 70px rgba(0, 0, 0, .12);
+
+    --radius: 22px;
+    --accent: #14a7a1;
+    --accent2: #0f8d88;
 }
 
 * {
@@ -25,92 +32,97 @@ body {
     margin: 0;
     font-family: system-ui, Segoe UI, Arial, sans-serif;
     color: var(--text);
-    background: #07090c;
+    background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 55%, #ffffff 100%);
 }
 
-/* ultra-subtiler Glow + Noise (macht’s „wertiger“) */
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background:
-        radial-gradient(900px 450px at 55% -10%, rgba(255, 255, 255, .08), transparent 60%),
-        radial-gradient(700px 420px at 15% 10%, rgba(42, 167, 161, .10), transparent 60%);
-    opacity: .9;
-}
-
+/* super subtiler Noise gegen Banding */
 body::after {
     content: "";
     position: fixed;
     inset: 0;
     pointer-events: none;
-    opacity: .08;
+    opacity: .04;
+    /* sehr niedrig = hochwertig */
     background-image: url("assets/noise.svg");
     background-repeat: repeat;
 }
 
 .wrap {
     max-width: 980px;
-    margin: 26px auto;
+    margin: 34px auto;
     padding: 0 18px;
 }
 
 .hero {
     border: 1px solid var(--border);
-    background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+    background: linear-gradient(180deg, rgba(255, 255, 255, .85), rgba(255, 255, 255, .62));
     border-radius: var(--radius);
-    padding: 18px;
+    padding: 22px;
     box-shadow: var(--shadow);
-    backdrop-filter: blur(10px);
 }
 
 h1 {
     margin: 0 0 6px 0;
-    font-size: 22px;
+    font-size: 26px;
     letter-spacing: .2px;
+    font-weight: 800;
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    /* ähnlich hochwertig */
 }
 
 .sub {
     margin: 0;
     color: var(--muted);
-    font-size: 13px;
-    line-height: 1.45;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .bar {
-    margin-top: 14px;
+    margin-top: 16px;
     display: grid;
-    grid-template-columns: 1fr 180px 180px 160px;
-    gap: 10px;
+    grid-template-columns: 1fr 190px 190px 160px;
+    gap: 12px;
     align-items: center;
 }
 
 input,
-select,
-button {
+select {
     width: 100%;
     border-radius: 14px;
-    border: 1px solid var(--border);
-    background: rgba(17, 21, 27, .78);
+    border: 1px solid rgba(16, 20, 23, .14);
+    background: var(--input);
     color: var(--text);
-    padding: 10px 12px;
+    padding: 11px 12px;
     font-size: 13px;
     outline: none;
 }
 
 input::placeholder {
-    color: rgba(165, 176, 190, .6);
+    color: rgba(95, 107, 118, .75);
+}
+
+input:focus,
+select:focus {
+    border-color: rgba(20, 167, 161, .55);
+    box-shadow: 0 0 0 4px rgba(20, 167, 161, .14);
 }
 
 button {
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, .06);
+    background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+    color: #fff;
+    padding: 11px 14px;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
-    background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04));
-    transition: transform .06s ease, border-color .2s ease;
+    box-shadow: 0 10px 30px rgba(20, 167, 161, .22);
+    transition: transform .06s ease, filter .15s ease;
 }
 
 button:hover {
-    border-color: rgba(255, 255, 255, .16);
+    filter: brightness(1.03);
 }
 
 button:active {
@@ -127,8 +139,8 @@ button:active {
 }
 
 .pill {
-    border: 1px solid var(--border);
-    background: rgba(17, 21, 27, .55);
+    border: 1px solid rgba(16, 20, 23, .12);
+    background: rgba(255, 255, 255, .72);
     padding: 6px 10px;
     border-radius: 999px;
 }
@@ -136,16 +148,15 @@ button:active {
 .grid {
     margin-top: 16px;
     display: grid;
-    gap: 12px;
+    gap: 14px;
 }
 
 .card {
-    border: 1px solid var(--border);
-    background: rgba(17, 21, 27, .72);
+    border: 1px solid rgba(16, 20, 23, .12);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .78));
     border-radius: var(--radius);
-    padding: 14px;
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(10px);
+    padding: 16px;
+    box-shadow: 0 12px 45px rgba(0, 0, 0, .10);
 }
 
 .meta {
@@ -159,12 +170,13 @@ button:active {
 .title {
     margin: 8px 0 6px 0;
     font-size: 16px;
+    font-weight: 800;
 }
 
 .text {
     margin: 0 0 10px 0;
-    color: rgba(238, 242, 247, .92);
-    line-height: 1.5;
+    color: rgba(16, 20, 23, .92);
+    line-height: 1.55;
 }
 
 .tags {
@@ -175,23 +187,23 @@ button:active {
 }
 
 .tag {
-    background: rgba(15, 20, 26, .75);
-    border: 1px solid var(--border);
+    background: rgba(234, 241, 255, .85);
+    border: 1px solid rgba(16, 20, 23, .10);
     padding: 4px 10px;
     border-radius: 999px;
     font-size: 12px;
 }
 
 .tag b {
-    font-weight: 650;
+    font-weight: 750;
 }
 
 .next {
     margin: 0;
     color: var(--muted);
     font-size: 12px;
-    line-height: 1.45;
-    border-top: 1px solid var(--border);
+    line-height: 1.5;
+    border-top: 1px solid rgba(16, 20, 23, .10);
     padding-top: 10px;
 }
 
@@ -204,14 +216,14 @@ button:active {
 .hint {
     margin-top: 10px;
     font-size: 12px;
-    color: rgba(165, 176, 190, .9);
+    color: rgba(95, 107, 118, .95);
 }
 
 .hint code {
-    background: rgba(255, 255, 255, .06);
+    background: rgba(255, 255, 255, .75);
     padding: 2px 6px;
     border-radius: 8px;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(16, 20, 23, .10);
 }
 
 @media (max-width: 860px) {

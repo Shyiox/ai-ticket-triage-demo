@@ -1,157 +1,170 @@
-:root{
-/* LIGHT */
---bg1:#dff2f2;
---bg2:#eaf7f7;
+<!doctype html>
+<html lang="de">
 
---card:#fbf6ea; /* warm/creamy */
---card2:#ffffff;
---text:#101417;
---muted:#5f6b76;
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AI Ticket Triage Demo</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
 
---input:#eaf1ff; /* leicht bläulich wie im Login */
---border:rgba(16,20,23,.12);
---shadow: 0 20px 70px rgba(0,0,0,.12);
+<body>
+    <div class="wrap">
+        <div class="hero">
+            <h1>AI Ticket Triage Demo</h1>
+            <p class="sub">Heuristik-basierte Triage als „Baseline“. (Kann später durch ein LLM ersetzt werden, ohne
+                API-Key im Repo.)</p>
 
---radius: 22px;
---accent:#14a7a1;
---accent2:#0f8d88;
-}
+            <div class="bar">
+                <input id="q" placeholder="Suche (z. B. login, spam, gesperrt) …" />
+                <select id="urgency">
+                    <option value="all">Urgency: alle</option>
+                    <option value="high">Urgency: high</option>
+                    <option value="medium">Urgency: medium</option>
+                    <option value="low">Urgency: low</option>
+                </select>
+                <select id="sort">
+                    <option value="urgency">Sort: high → low</option>
+                    <option value="id">Sort: id</option>
+                </select>
+                <button id="run">Tickets laden</button>
+            </div>
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
+            <div class="stats" id="stats"></div>
+            <div class="status" id="status">Status: bereit.</div>
+            <div class="hint">Tipp: Demo läuft per <code>tickets.json</code> (synthetische Daten).</div>
+        </div>
 
-body{
-margin:0;
-font-family: system-ui, Segoe UI, Arial, sans-serif;
-color:var(--text);
-background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 55%, #ffffff 100%);
-}
+        <div class="grid" id="out"></div>
+    </div>
 
-/* super subtiler Noise gegen Banding */
-body::after{
-content:"";
-position:fixed;
-inset:0;
-pointer-events:none;
-opacity:.04; /* sehr niedrig = hochwertig */
-background-image: url("assets/noise.svg");
-background-repeat: repeat;
-}
+    <script>
+        const $ = (id) => document.getElementById(id);
 
-.wrap{ max-width: 980px; margin: 34px auto; padding: 0 18px; }
+        function scoreTicket(t) {
+            const s = (t.subject + " " + t.text).toLowerCase();
+            let urgency = 0;
 
-.hero{
-border:1px solid var(--border);
-background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.62));
-border-radius: var(--radius);
-padding: 22px;
-box-shadow: var(--shadow);
-}
+            if (/(dringend|sofort|heute|asap)/.test(s)) urgency += 2;
+            if (/(gesperrt|kein zugriff|login geht nicht|login|fehler)/.test(s)) urgency += 2;
+            if (/(spam|link|scam|phishing)/.test(s)) urgency += 3;
 
-h1{
-margin: 0 0 6px 0;
-font-size: 26px;
-letter-spacing: .2px;
-font-weight: 800;
-font-family: ui-serif, Georgia, "Times New Roman", serif; /* ähnlich hochwertig */
-}
-.sub{ margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+            let category = "general";
+            if (/(login|passwort|zugriff|auth)/.test(s)) category = "auth";
+            if (/(spam|phishing|scam|link)/.test(s)) category = "abuse";
+            if (/(zahlung|abo|rechnung)/.test(s)) category = "billing";
 
-.bar{
-margin-top: 16px;
-display: grid;
-grid-template-columns: 1fr 190px 190px 160px;
-gap: 12px;
-align-items: center;
-}
+            const label = urgency >= 4 ? "high" : urgency >= 2 ? "medium" : "low";
+            const nextAction =
+                category === "abuse" ? "Prüfen, ggf. sperren/entfernen, IP/Rate-Limit" :
+                    category === "auth" ? "Logs prüfen, User zurücksetzen, Statusseite checken" :
+                        category === "billing" ? "Zahlungsstatus prüfen, Support-Antwort vorbereiten" :
+                            "Rückfragen stellen, einordnen, weiterleiten";
 
-input, select{
-width: 100%;
-border-radius: 14px;
-border: 1px solid rgba(16,20,23,.14);
-background: var(--input);
-color: var(--text);
-padding: 11px 12px;
-font-size: 13px;
-outline: none;
-}
+            return { urgency: label, category, nextAction };
+        }
 
-input::placeholder{ color: rgba(95,107,118,.75); }
+        function urgencyRank(u) {
+            return u === "high" ? 0 : u === "medium" ? 1 : 2;
+        }
 
-input:focus, select:focus{
-border-color: rgba(20,167,161,.55);
-box-shadow: 0 0 0 4px rgba(20,167,161,.14);
-}
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, (m) => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+            }[m]));
+        }
 
-button{
-width: 100%;
-border-radius: 16px;
-border: 1px solid rgba(0,0,0,.06);
-background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
-color: #fff;
-padding: 11px 14px;
-font-size: 13px;
-font-weight: 700;
-cursor: pointer;
-box-shadow: 0 10px 30px rgba(20,167,161,.22);
-transition: transform .06s ease, filter .15s ease;
-}
-button:hover{ filter: brightness(1.03); }
-button:active{ transform: scale(.99); }
+        async function loadTickets() {
+            $("status").textContent = "Status: lade tickets.json …";
+            const res = await fetch("./tickets.json", { cache: "no-store" });
+            if (!res.ok) throw new Error("tickets.json konnte nicht geladen werden");
+            const tickets = await res.json();
+            $("status").textContent = `Status: ${tickets.length} Tickets geladen.`;
+            return tickets;
+        }
 
-.stats{
-margin-top: 12px;
-display: flex;
-gap: 10px;
-flex-wrap: wrap;
-color: var(--muted);
-font-size: 12px;
-}
-.pill{
-border: 1px solid rgba(16,20,23,.12);
-background: rgba(255,255,255,.72);
-padding: 6px 10px;
-border-radius: 999px;
-}
+        function renderStats(list) {
+            const counts = { high: 0, medium: 0, low: 0 };
+            list.forEach(x => counts[x.urgency] = (counts[x.urgency] || 0) + 1);
+            $("stats").innerHTML = `
+        <div class="pill">high: <b>${counts.high}</b></div>
+        <div class="pill">medium: <b>${counts.medium}</b></div>
+        <div class="pill">low: <b>${counts.low}</b></div>
+        <div class="pill">gesamt: <b>${list.length}</b></div>
+      `;
+        }
 
-.grid{ margin-top: 16px; display: grid; gap: 14px; }
+        function render(list) {
+            const out = $("out");
+            out.innerHTML = "";
 
-.card{
-border: 1px solid rgba(16,20,23,.12);
-background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
-border-radius: var(--radius);
-padding: 16px;
-box-shadow: 0 12px 45px rgba(0,0,0,.10);
-}
+            if (list.length === 0) {
+                out.innerHTML = `
+          <div class="card">
+            <div class="meta">Keine Treffer</div>
+            <p class="text">Filter/Suche liefern keine Tickets.</p>
+          </div>
+        `;
+                return;
+            }
 
-.meta{ color: var(--muted); font-size: 12px; display:flex; justify-content: space-between; gap: 10px; }
-.title{ margin: 8px 0 6px 0; font-size: 16px; font-weight: 800; }
-.text{ margin: 0 0 10px 0; color: rgba(16,20,23,.92); line-height: 1.55; }
+            list.forEach(t => {
+                out.insertAdjacentHTML("beforeend", `
+          <div class="card">
+            <div class="meta"><span>#${escapeHtml(t.id)}</span><span>${escapeHtml(t.category)}</span></div>
+            <h3 class="title">${escapeHtml(t.subject)}</h3>
+            <p class="text">${escapeHtml(t.text)}</p>
+            <div class="tags">
+              <span class="tag">urgency: <b>${escapeHtml(t.urgency)}</b></span>
+              <span class="tag">category: <b>${escapeHtml(t.category)}</b></span>
+            </div>
+            <p class="next"><b>Next action:</b> ${escapeHtml(t.nextAction)}</p>
+          </div>
+        `);
+            });
+        }
 
-.tags{ display:flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-.tag{
-background: rgba(234,241,255,.85);
-border: 1px solid rgba(16,20,23,.10);
-padding: 4px 10px;
-border-radius: 999px;
-font-size: 12px;
-}
-.tag b{ font-weight: 750; }
+        function applyFilters(all) {
+            const q = $("q").value.trim().toLowerCase();
+            const urg = $("urgency").value;
+            const sort = $("sort").value;
 
-.next{
-margin: 0;
-color: var(--muted);
-font-size: 12px;
-line-height: 1.5;
-border-top: 1px solid rgba(16,20,23,.10);
-padding-top: 10px;
-}
+            let list = all.slice();
 
-.status{ margin-top: 14px; font-size: 12px; color: var(--muted); }
-.hint{ margin-top: 10px; font-size: 12px; color: rgba(95,107,118,.95); }
-.hint code{ background: rgba(255,255,255,.75); padding: 2px 6px; border-radius: 8px; border: 1px solid
-rgba(16,20,23,.10); }
+            if (q) {
+                list = list.filter(t => (t.subject + " " + t.text + " " + t.category).toLowerCase().includes(q));
+            }
+            if (urg !== "all") {
+                list = list.filter(t => t.urgency === urg);
+            }
 
-@media (max-width: 860px){
-.bar{ grid-template-columns: 1fr 1fr; }
-}
+            if (sort === "urgency") {
+                list.sort((a, b) => urgencyRank(a.urgency) - urgencyRank(b.urgency) || (a.id - b.id));
+            } else {
+                list.sort((a, b) => a.id - b.id);
+            }
+
+            renderStats(list);
+            render(list);
+        }
+
+        let ALL = [];
+
+        $("run").addEventListener("click", async () => {
+            try {
+                const tickets = await loadTickets();
+                ALL = tickets.map(t => ({ ...t, ...scoreTicket(t) }));
+                applyFilters(ALL);
+            } catch (e) {
+                $("status").textContent = "Status: Fehler — " + (e?.message || String(e));
+            }
+        });
+
+        ["q", "urgency", "sort"].forEach(id => {
+            $(id).addEventListener("input", () => applyFilters(ALL));
+            $(id).addEventListener("change", () => applyFilters(ALL));
+        });
+    </script>
+</body>
+
+</html>
