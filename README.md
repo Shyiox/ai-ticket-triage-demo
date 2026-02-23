@@ -1,5 +1,5 @@
 # ai-ticket-triage-demo
 
 ## Live Demo
-https://github.com/Shyiox/ai-ticket-triage-demo
+https://shyiox.github.io/ai-ticket-triage-demo/
 
