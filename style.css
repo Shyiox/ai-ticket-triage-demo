@@ -1,0 +1,221 @@
+:root {
+    /* RIVAID-ish: dark, clean, slightly glassy */
+    --bg: #0b0d10;
+    --panel: #11151b;
+    --panel2: #0f141a;
+    --text: #eef2f7;
+    --muted: #a5b0be;
+    --border: rgba(255, 255, 255, .08);
+    --shadow: 0 18px 60px rgba(0, 0, 0, .55);
+    --radius: 18px;
+    --accent: #2aa7a1;
+    /* kannst du später 1:1 an RIVAID angleichen */
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, Segoe UI, Arial, sans-serif;
+    color: var(--text);
+    background: #07090c;
+}
+
+/* ultra-subtiler Glow + Noise (macht’s „wertiger“) */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(900px 450px at 55% -10%, rgba(255, 255, 255, .08), transparent 60%),
+        radial-gradient(700px 420px at 15% 10%, rgba(42, 167, 161, .10), transparent 60%);
+    opacity: .9;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .08;
+    background-image: url("assets/noise.svg");
+    background-repeat: repeat;
+}
+
+.wrap {
+    max-width: 980px;
+    margin: 26px auto;
+    padding: 0 18px;
+}
+
+.hero {
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+}
+
+h1 {
+    margin: 0 0 6px 0;
+    font-size: 22px;
+    letter-spacing: .2px;
+}
+
+.sub {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.bar {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: 1fr 180px 180px 160px;
+    gap: 10px;
+    align-items: center;
+}
+
+input,
+select,
+button {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: rgba(17, 21, 27, .78);
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 13px;
+    outline: none;
+}
+
+input::placeholder {
+    color: rgba(165, 176, 190, .6);
+}
+
+button {
+    cursor: pointer;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04));
+    transition: transform .06s ease, border-color .2s ease;
+}
+
+button:hover {
+    border-color: rgba(255, 255, 255, .16);
+}
+
+button:active {
+    transform: scale(.99);
+}
+
+.stats {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.pill {
+    border: 1px solid var(--border);
+    background: rgba(17, 21, 27, .55);
+    padding: 6px 10px;
+    border-radius: 999px;
+}
+
+.grid {
+    margin-top: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.card {
+    border: 1px solid var(--border);
+    background: rgba(17, 21, 27, .72);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+}
+
+.meta {
+    color: var(--muted);
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.title {
+    margin: 8px 0 6px 0;
+    font-size: 16px;
+}
+
+.text {
+    margin: 0 0 10px 0;
+    color: rgba(238, 242, 247, .92);
+    line-height: 1.5;
+}
+
+.tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.tag {
+    background: rgba(15, 20, 26, .75);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+.tag b {
+    font-weight: 650;
+}
+
+.next {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+}
+
+.status {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.hint {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(165, 176, 190, .9);
+}
+
+.hint code {
+    background: rgba(255, 255, 255, .06);
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+@media (max-width: 860px) {
+    .bar {
+        grid-template-columns: 1fr 1fr;
+    }
+}
